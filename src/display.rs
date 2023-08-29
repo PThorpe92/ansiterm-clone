@@ -198,7 +198,7 @@ impl Colour {
 
 impl<'a> fmt::Display for ANSIString<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let w: &mut fmt::Write = f;
+        let w: &mut dyn fmt::Write = f;
         self.write_to_any(w)
     }
 }
@@ -207,14 +207,14 @@ impl<'a> ANSIByteString<'a> {
     /// Write an `ANSIByteString` to an `io::Write`.  This writes the escape
     /// sequences for the associated `Style` around the bytes.
     pub fn write_to<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        let w: &mut io::Write = w;
+        let w: &mut dyn io::Write = w;
         self.write_to_any(w)
     }
 }
 
 impl<'a, S: 'a + ToOwned + ?Sized> ANSIGenericString<'a, S>
 where <S as ToOwned>::Owned: fmt::Debug, &'a S: AsRef<[u8]> {
-    fn write_to_any<W: AnyWrite<wstr=S> + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+    fn write_to_any<W: AnyWrite<Wstr=S> + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
         write!(w, "{}", self.style.prefix())?;
         w.write_str(self.string.as_ref())?;
         write!(w, "{}", self.style.suffix())
@@ -226,7 +226,7 @@ where <S as ToOwned>::Owned: fmt::Debug, &'a S: AsRef<[u8]> {
 
 impl<'a> fmt::Display for ANSIStrings<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let f: &mut fmt::Write = f;
+        let f: &mut dyn fmt::Write = f;
         self.write_to_any(f)
     }
 }
@@ -236,14 +236,14 @@ impl<'a> ANSIByteStrings<'a> {
     /// escape sequences for the associated `Style`s around each set of
     /// bytes.
     pub fn write_to<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        let w: &mut io::Write = w;
+        let w: &mut dyn io::Write = w;
         self.write_to_any(w)
     }
 }
 
 impl<'a, S: 'a + ToOwned + ?Sized + PartialEq> ANSIGenericStrings<'a, S>
 where <S as ToOwned>::Owned: fmt::Debug, &'a S: AsRef<[u8]> {
-    fn write_to_any<W: AnyWrite<wstr=S> + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
+    fn write_to_any<W: AnyWrite<Wstr=S> + ?Sized>(&self, w: &mut W) -> Result<(), W::Error> {
         use self::Difference::*;
 
         let first = match self.0.first() {
